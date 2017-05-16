@@ -1,8 +1,8 @@
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -13,7 +13,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
-
+/**
+ * 
+ * @author jgarfias
+ *
+ */
 public class Maker {
 
 	/*
@@ -25,6 +29,8 @@ public class Maker {
 	private static String driverName = "org.apache.hive.jdbc.HiveDriver";
 	
 	public static void main(String[] args) throws IOException, SQLException {
+		System.out.println("Inicia ETL.");
+		
 		
 		int twitter_hashtags = 0;
 		int twitter_tweets = 0;
@@ -43,11 +49,12 @@ public class Maker {
 			e.printStackTrace();
 			System.exit(1);
 		}
-
+		System.out.println("Inicia Conexión.");
 		Connection con = DriverManager.getConnection(
 				props.getProperty("hiveUrl")+"/social_network");
 		
 		Statement stmt = con.createStatement();
+		System.out.println("Conexión Creada.");
 
 		String sql;
 		sql = "select 'twitter_tweets' as tabla, max(id) from twitter_tweets union"
@@ -55,11 +62,14 @@ public class Maker {
 				+ " select 'twitter_tweets_filtro_palabra' as tabla, max(id) from twitter_tweets_filtro_palabra union"
 				+ " select 'twitter_user' as tabla, max(id) from twitter_user";
 		ResultSet res;
-		res = stmt.executeQuery(sql);
+
+		System.out.println("Prepara Ejecución.");
+
 		// show tables
 		System.out.println("Running: " + sql);
 		res = stmt.executeQuery(sql);
-		
+		System.out.println("Termina Ejecución.");
+
 		while (res.next()) {
 			
 			if (res.getString(1).equals("twitter_hashtags")) {
@@ -82,7 +92,8 @@ public class Maker {
 		res.close();
 		stmt.close();
 		con.close();
-		
+		System.out.println("Cierra Conexión.");
+
 		File file = new File(props.getProperty("path"));
 
 		file.delete();
@@ -164,22 +175,19 @@ public class Maker {
 		bw.write(bash);
 		bw.write(System.getProperty("line.separator"));
 		bw.close();
-		System.out.println("Archivo .sh generado.");
+		System.out.println("Archivo etl.sh generado.");
 		
 
 
-		ProcessBuilder pb = new ProcessBuilder(props.getProperty("pathBash"));
-		Process p = pb.start();
-		BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-		String line = null;
-		while ((line = reader.readLine()) != null)
-		{
-		    System.out.println(line);
-		}
+//		ProcessBuilder pb = new ProcessBuilder(props.getProperty("pathBash"));
+//		Process p = pb.start();
+//		BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+//		String line = null;
+//		while ((line = reader.readLine()) != null)
+//		{
+//		    System.out.println(line);
+//		}
 
-
-		
-		
 	}
 
 	
